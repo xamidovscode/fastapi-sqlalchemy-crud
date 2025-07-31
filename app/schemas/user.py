@@ -3,8 +3,8 @@ from pydantic import BaseModel
 
 class UserSchema(BaseModel):
     id: int
-    name: str
+    full_name: str
 
 
 class UserCrudSchema(BaseModel):
-    name: str
+    full_name: str

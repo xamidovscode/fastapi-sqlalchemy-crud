@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from app.core.database import SessionLocal
-from app.api.v1 import user_routes
+from app.api.v1 import (
+    user_routes,
+    auth,
+
+)
 
 app = FastAPI()
 
@@ -12,3 +16,4 @@ def get_db():
         db.close()
 
 app.include_router(user_routes.router, prefix="/users", tags=["Users"])
+app.include_router(auth.router, prefix="/users", tags=["Auth"])
