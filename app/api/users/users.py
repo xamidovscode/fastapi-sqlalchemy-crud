@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import User, UserCreate, UserUpdate
-from app.crud.user import user_crud # Import the instantiated user_crud
+from app.crud.user import user_crud
 from app.core.database import get_db
 
 router = APIRouter()
