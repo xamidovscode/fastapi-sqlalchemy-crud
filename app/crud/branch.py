@@ -15,6 +15,7 @@ class CRUDBranch(CRUDBase[Branch, BranchCreateSchema, BranchListSchema]):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"message": "A branch with that name already exists."},
             )
+
         branch = await super().create(db, data=data)
         return branch
 
