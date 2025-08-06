@@ -1,23 +1,19 @@
-from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from app.models.user import User
+from app.schemas.user import UserCreate
 
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
+class CRUDUser:
+    async def get_user_by_email(self, db: AsyncSession, email: str):
+        result = await db.execute(select(User).filter(User.email == email))
+        return result.scalars().first()
 
-from app.crud.base import CRUDBase, ModelType
-from ..models.user import User
-from ..schemas.user import UserSchema, UserCrudSchema
+    async def create_user(self, db: AsyncSession, user: UserCreate):
+        # In a real app, you'd hash the password here
+        db_user = User(email=user.email, hashed_password=user.password + "notreallyhashed")
+        db.add(db_user)
+        await db.commit()
+        await db.refresh(db_user)
+        return db_user
 
-
-class CRUDUser(CRUDBase[User, UserCrudSchema, UserCrudSchema]):
-
-    def remove(self, db: Session, **filters) -> Optional[ModelType]:
-        obj = db.query(self.model).filter_by(**filters).first()
-
-        if not obj:
-            raise HTTPException(status_code=404, detail="Object not found")
-
-        db.delete(obj)
-        db.commit()
-        return obj
-
-user_crud = CRUDUser(User)
+user_crud = CRUDUser()
