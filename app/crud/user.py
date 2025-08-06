@@ -11,10 +11,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         result = await db.execute(select(self.model).filter(self.model.email == email))
         return result.scalars().first()
 
-    async def create(self, db: AsyncSession, *, obj_in: UserCreate) -> User:
+    async def create(self, db: AsyncSession, *, data: UserCreate) -> User:
         """Override create to handle password hashing (example)."""
         # In a real app, you'd hash the password here
-        db_obj = self.model(email=obj_in.email, hashed_password=obj_in.password + "notreallyhashed")
+        db_obj = self.model(email=data.email, hashed_password=data.password + "notreallyhashed")
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)

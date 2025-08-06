@@ -7,6 +7,6 @@ class Branch(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    start_time: Mapped[str] = mapped_column(Time(timezone=True), nullable=False)
-    end_time: Mapped[str] = mapped_column(Time(timezone=True), nullable=False)
+    start_time: Mapped[str] = mapped_column(Time(timezone=False), nullable=False)
+    end_time: Mapped[str] = mapped_column(Time(timezone=False), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update as sa_update, delete as sa_delete
+from sqlalchemy import and_
 
 from app.core.database import Base
 
@@ -20,9 +20,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(self, db: AsyncSession, id: Any) -> Optional[ModelType]:
-        """Retrieve a single record by ID."""
-        result = await db.execute(select(self.model).filter(self.model.id == id))
+    async def get(self, db: AsyncSession, **filters) -> Optional[ModelType]:
+        """Retrieve a single record by dynamic filters."""
+        if not filters:
+            return None
+
+        query = select(self.model).filter(
+            and_(*(getattr(self.model, key) == value for key, value in filters.items()))
+        )
+        result = await db.execute(query)
         return result.scalars().first()
 
     async def get_multi(
@@ -32,9 +38,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         result = await db.execute(select(self.model).offset(skip).limit(limit))
         return result.scalars().all()
 
-    async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, db: AsyncSession, *, data: CreateSchemaType) -> ModelType:
         """Create a new record."""
-        obj_in_data = jsonable_encoder(obj_in)
+        obj_in_data = data.dict()
         db_obj = self.model(**obj_in_data)  # type: ignore
         db.add(db_obj)
         await db.commit()
@@ -58,17 +64,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         for field in obj_data:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
-
-        # Alternatively, for a more direct update using SQLAlchemy's update statement:
-        # await db.execute(
-        #     sa_update(self.model)
-        #     .where(self.model.id == db_obj.id)
-        #     .values(**update_data)
-        # )
-        # await db.commit()
-        # await db.refresh(db_obj) # Refresh to get updated data if using direct update
-
-        db.add(db_obj) # Add the modified object back to the session
+        db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
