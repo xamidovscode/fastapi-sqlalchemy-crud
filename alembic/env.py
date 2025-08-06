@@ -9,32 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
 
-# Add your project's root directory to the Python path
-# Assuming alembic/env.py is one level deep from the project root
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# this is the Alembic Config object, which provides
-# access to values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-from app.core.database import Base # Import your Base from your application
-from app.models import user # Import your models so Alembic can discover them
+from app.models import *
 
 target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
